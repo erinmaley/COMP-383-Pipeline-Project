@@ -1,1 +1,55 @@
 
+# Importing necessary libraries and setting up email for Entrez
+import os
+import Bio
+from Bio import Entrez
+
+Entrez.email = "emaley@luc.edu"
+
+# Retrieving HCMV genome fasta from NCBI
+handle = Entrez.efetch(db="nucleotide", id='NC_006273.2', rettype='fasta')
+fasta = handle.read()
+handle.close()
+
+# Writing HCMV genome fasta to file and building index for Bowtie2
+with open('HCMV.fasta', 'w') as f:
+  f.write(fasta)
+
+os.system('bowtie2-build HCMV.fasta HCMV')
+
+# Aligning reads to HCMV genome using Bowtie2
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660030_1.fastq -2 SRR5660030_2.fastq -S HCMV30mapped.sam')
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660033_1.fastq -2 SRR5660033_2.fastq -S HCMV33mapped.sam')
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660044_1.fastq -2 SRR5660044_2.fastq -S HCMV44mapped.sam')
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660045_1.fastq -2 SRR5660045_2.fastq -S HCMV45mapped.sam')
+# Getting initial read counts for each sample
+initial_counts = {}
+samples_list = ['SRR5660030', 'SRR5660033', 'SRR5660044', 'SRR5660045']
+for s in samples_list:
+   with open(f'{s}_1.fastq') as file1:
+       initial_counts[s] = sum([1 for line in file1]) / 4
+   print(f'{s} has {initial_counts[s]:,} read pairs before filtering')
+
+# Filtering out non-mapped reads and writing mapped reads to new fastq files
+for s in samples_list:
+   output_sam = f'{s}_mapped.sam'
+   os.system(f'bowtie2 --quiet -x HCMV -1 {s}_1.fastq -2 {s}_2.fastq -S {output_sam}')
+
+   post_filter_counts = 0
+   with open(output_sam) as samfile, open(f'{s}_HCMV.fastq', 'w') as fastqfile:
+       for line in samfile:
+           if line.startswith('@'):
+               continue
+           parts = line.split('\t')
+           flag_val = int(parts[1])
+
+           if flag_val & 4 == 0:
+               post_filter_counts += 1
+               qname_val = parts[0]
+               seq_val = parts[9]
+               qual_val = parts[10]
+               fastqfile.write(f"@{qname_val}\n{seq_val}\n+\n{qual_val}\n")
+
+   # Writing filtered read counts to a log file
+   with open('log.txt', 'a') as logfile:
+       logfile.write(f'{s} has {initial_counts[s]:,} read pairs before filtering and {post_filter_counts:,} read pairs after filtering.\n')
