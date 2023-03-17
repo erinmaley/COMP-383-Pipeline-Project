@@ -1,4 +1,4 @@
-
+```python
 # Importing necessary libraries and setting up email for Entrez
 import os
 import Bio
@@ -53,3 +53,25 @@ for s in samples_list:
    # Writing filtered read counts to a log file
    with open('log.txt', 'a') as logfile:
        logfile.write(f'{s} has {initial_counts[s]:,} read pairs before filtering and {post_filter_counts:,} read pairs after filtering.\n')
+```
+```python
+with open("blast_result.xml", "r") as result_handle:
+    blast_records = list(NCBIXML.parse(result_handle))
+
+# Open a new file in write mode to store the top 10 matches and write the header
+with open("top_10_matches.txt", "w") as log_file:
+    log_file.write("sacc\tpident\tlength\tqstart\tqend\tsstart\tsend\tbitscore\tevalue\ts
+title\n")
+
+    # Loop through each Blast record
+    for record in blast_records:
+        
+        # Loop through the top 10 alignments for each record
+        for alignment in record.alignments[:10]:
+            # Extract the first HSP for each alignment
+            hsp = alignment.hsps[0]  
+
+            # Format the output line with the required fields and write it to the log file
+            output_line = f"{alignment.accession}\t{hsp.identities * 100 / hsp.align_length:.2f}\t{hsp.align_length}\t{hsp.query_start}\t{hsp.query_end}\t{hsp.sbjct_start}\t{hsp.sbjct_end}\t{hsp.bits}\t{hsp.expect}\t{alignment.title}\n"
+            log_file.write(output_line)
+```
