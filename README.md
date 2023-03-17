@@ -105,12 +105,12 @@ this is used to read in the following donor data and compare it too HCMV
 
 ```python
 #Getting initial read counts for each sample
-initial_counts = {}
+initial_read_counts = {}
 samples_list = ['SRR5660030', 'SRR5660033', 'SRR5660044', 'SRR5660045']
 for s in samples_list:
    with open(f'{s}_1.fastq') as file1:
-       initial_counts[s] = sum([1 for line in file1]) / 4
-   print(f'{s} has {initial_counts[s]:,} read pairs before filtering')
+       initial_read_counts[s] = sum([1 for line in file1]) / 4
+   print(f'{s} has {initial_read_counts[s]:,} read pairs before filtering')
 ```
 ```python
 # Filtering out non-mapped reads and writing mapped reads to new fastq files
@@ -161,7 +161,7 @@ samples = {
 spades_input = ''
 
 # iterate through the samples dictionary and construct the SPAdes input command
-for index, (sample_name, fq) in enumerate(samples.items(), start=1):
+for index, (<sample_name>, fq) in enumerate(samples.items(), start=1):
     spades_input += f'--s{index} {fq} '
 
 # construct the SPAdes command with the input command and other parameters
@@ -208,15 +208,14 @@ with open('log.txt', 'a') as log_file:
 # 5
 #
 ```python
-# Import the necessary module
 from Bio.Blast import NCBIXML
 
 # Open the BLAST result file in read mode and parse it into a list of Blast records
-with open("blast_result.xml", "r") as result_handle:
+with open("blast_results.xml", "r") as result_handle:
     blast_records = list(NCBIXML.parse(result_handle))
 
 # Open a new file in write mode to store the top 10 matches and write the header
-with open("top_10_matches.txt", "w") as log_file:
+with open("<file_name_top>.txt", "w") as log_file:
     log_file.write("sacc\tpident\tlength\tqstart\tqend\tsstart\tsend\tbitscore\tevalue\tstitle\n")
 
     # Loop through each Blast record
