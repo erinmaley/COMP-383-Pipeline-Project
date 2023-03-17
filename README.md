@@ -60,3 +60,16 @@ with open ('HCMV.fasta','w') as f:
 
   f.write(fasta)
   
+#this will read in and format HCMV into a fasta file
+#next we perform bowtie2 in order to compare the overlaps to the donors genome and HCMV:
+
+os.system('bowtie2-build HCMV.fasta HCMV)
+#this creates an index in order to perform bowtie 2
+
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660030_1.fastq -2 SRR5660030_2.fastq -S HCMV30mapped.sam')
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660033_1.fastq -2 SRR5660033_2.fastq -S HCMV33mapped.sam')
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660044_1.fastq -2 SRR5660044_2.fastq -S HCMV44mapped.sam')
+os.system('bowtie2 --quiet -x HCMV -1 SRR5660045_1.fastq -2 SRR5660045_2.fastq -S HCMV45mapped.sam')
+
+#this is used to read in the following donor data and compare it too HCMV
+
